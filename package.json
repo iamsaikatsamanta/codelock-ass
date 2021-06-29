@@ -1,0 +1,29 @@
+{
+  "name": "codelock",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "codelock": "src/index.js"
+  },
+  "author": "Saikat Samanta",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "commander": "^7.2.0",
+    "crontab": "^1.4.2",
+    "dirhash": "^0.1.1",
+    "folder-hash": "^4.0.1",
+    "inquirer": "^8.1.1",
+    "node-schedule": "^2.0.0",
+    "pm2": "^5.1.0",
+    "semver": "^7.3.5",
+    "which": "^2.0.2"
+  },
+  "engines": {
+    "node": "^12.0.0 || >= 14.0.0"
+  }
+}
