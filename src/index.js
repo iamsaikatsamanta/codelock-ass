@@ -62,7 +62,7 @@ program.command('unlink')
             const scriptPath = os.homedir() + `/.codelock_${credentials.project_id}.js`;
             fs.unlinkSync(scriptPath);
             fs.unlinkSync(configPath);
-            const data = await axios.post('http://localhost:3000/api/v1/remove-project', {project_id: credentials.project_id}, {
+            const data = await axios.post('https://test.api.codelock.ai/api/v1/remove-project', {project_id: credentials.project_id}, {
                 auth: {
                     username: credentials.api_key,
                     password: credentials.secret

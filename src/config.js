@@ -43,7 +43,6 @@ exports.prompt = (codelock_config, fileFound = false) => {
         },
     ])
     .then(async response =>{
-       
         if(!response.api_key || response.api_key === '' || !response.secret || response.secret === '' || !response.build_path || !response.build_path === '' || 
         !response.project_id || response.project_id === '' || !response.scan_frequency) {
             console.log('Failed To Initialize The Project');
@@ -85,7 +84,7 @@ exports.prompt = (codelock_config, fileFound = false) => {
 const configureProject = (codelock_config) => {
     return new Promise(async (resolve, reject) =>{
         try {
-            const data = await axios.post('http://localhost:3000/api/v1/configure-project', 
+            const data = await axios.post('https://test.api.codelock.ai/api/v1/configure-project', 
             {project_id: codelock_config.project_id, build_path: codelock_config.build_path, scan_frequency: codelock_config.scan_frequency} ,{
                 auth: {
                     username: codelock_config.api_key,
@@ -116,7 +115,7 @@ const sendScanedHash = (hash, init=false) => {
             const codelock_config = fs.readFileSync(configPath, 'utf8');
             if (codelock_config) {
                 const credentials = JSON.parse(codelock_config);
-                const data = await axios.post('http://localhost:3000/api/v1/add-project-scan', {
+                const data = await axios.post('https://test.api.codelock.ai/api/v1/add-project-scan', {
                     project_id: credentials.project_id,
                     init,
                     hash,

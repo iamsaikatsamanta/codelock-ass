@@ -1,6 +1,6 @@
 {
   "name": "codelock",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -14,12 +14,8 @@
   "dependencies": {
     "axios": "^0.21.1",
     "commander": "^7.2.0",
-    "crontab": "^1.4.2",
     "dirhash": "^0.1.1",
-    "folder-hash": "^4.0.1",
     "inquirer": "^8.1.1",
-    "node-schedule": "^2.0.0",
-    "pm2": "^5.1.0",
     "semver": "^7.3.5",
     "which": "^2.0.2"
   },
