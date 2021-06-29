@@ -1,6 +1,6 @@
 {
   "name": "codelock",
-  "version": "1.0.2",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -17,6 +17,7 @@
     "dirhash": "^0.1.1",
     "inquirer": "^8.1.1",
     "semver": "^7.3.5",
+    "underscore": "^1.13.1",
     "which": "^2.0.2"
   },
   "engines": {
