@@ -5,6 +5,8 @@ const dirhash = require('dirhash');
 const os = require('os');
 const which = require('which');
 const configPath = os.homedir() + '/.codelock_config.json';
+const exec = require('child_process').exec;
+
 
 exports.prompt = (codelock_config, fileFound = false) => {
     let credentials;
@@ -41,19 +43,27 @@ exports.prompt = (codelock_config, fileFound = false) => {
             default: codelock_config ? codelock_config.scan_frequency : 5
         },
     ])
-    .then(async response =>{
-        if(!response.api_key || response.api_key === '' || !response.secret || response.secret === '' || !response.build_path || !response.build_path === '' || 
-        !response.project_id || response.project_id === '' || !response.scan_frequency) {
-            console.log('Failed To Initialize The Project');
-            process.exit(1);
-        }
-        if(response.scan_frequency > 59 && response.scan_frequency < 1) {
-            console.log('Invalid Scan Frequency');
-            process.exit(1);
-        }
-        credentials = response;
-        return configureProject(response);
+    .then(response =>{
+        initProject(response);
     })
+    .catch(err => {
+        console.log('Something went wrong please try again');
+    });
+}
+
+const initProject =(response) => {
+    // console.log(response.scan_frequency === '');
+    if(!response.api_key || response.api_key === '' || !response.secret || response.secret === '' || !response.build_path || !response.build_path === '' ||
+    !response.project_id || response.project_id === '' || !response.scan_frequency) {
+        console.log('Failed To Initialize The Project');
+        process.exit(1);
+    }
+    if(Number(response.scan_frequency) > 59 || Number(response.scan_frequency) < 1) {
+        console.log('Invalid Scan Frequency');
+        process.exit(1);
+    }
+    let credentials = response;
+    configureProject(response)
     .then(response =>{
         if (response.code === 0) {
             fs.writeFileSync(configPath, JSON.stringify({...credentials, hash_function: response.result.hash_function}))
@@ -64,14 +74,17 @@ exports.prompt = (codelock_config, fileFound = false) => {
         }
     })
     .then(async resp => {
-        require('./crontab/lib').load(async (err, crontab)=>{
-            const nodePath = await which('node');
-            const scriptPath = os.homedir() + `/.codelock_${credentials.project_id}.js`;
-            fs.writeFileSync(scriptPath,`#!/usr/bin/env node\nconst exec = require('child_process').exec;\nexec('codelock scan', (stdin, stderr)=>{console.log(stderr);});`)
-            const j = crontab.create(`${nodePath} ${scriptPath}`,`*/${credentials.scan_frequency} * * * *`);
-            crontab.save((err, crontab)=> {
+        const nodePath = await which('node');
+        const scriptPath = os.homedir() + `/.codelock_${credentials.project_id}.js`;
+        fs.writeFileSync(scriptPath,`#!/usr/bin/env node\nconst exec = require('child_process').exec;\nexec('codelock scan', (stdin, stderr)=>{console.log(stderr);});`)
+        exec(`(crontab -l | grep -v "${nodePath} ${scriptPath}") | crontab -`, async (stdin, stderr)=>{
+            exec(`(crontab -l; echo "*/${credentials.scan_frequency} * * * * ${nodePath} ${scriptPath}") | crontab -`, (stdin, stderr)=>{
+                if(stderr) {
+                    console.log('Failed To Schedule Scan');
+                    process.exit(1);
+                }
                 return sendScanedHash(resp, true);
-            })
+            });
         })
     })
     .then(resp => {
@@ -81,7 +94,6 @@ exports.prompt = (codelock_config, fileFound = false) => {
         console.log('Something went wrong please try again');
     });
 }
-
 
 
 const configureProject = (codelock_config) => {
@@ -140,3 +152,4 @@ const sendScanedHash = (hash, init=false) => {
 
 exports.sendScanedHash = sendScanedHash;
 exports.triggerScan = triggerScan;
+exports.initProject = initProject;
