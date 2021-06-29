@@ -5,7 +5,6 @@ const dirhash = require('dirhash');
 const os = require('os');
 const which = require('which');
 const configPath = os.homedir() + '/.codelock_config.json';
-const saveCron = require('../crontab')
 
 exports.prompt = (codelock_config, fileFound = false) => {
     let credentials;
@@ -46,6 +45,10 @@ exports.prompt = (codelock_config, fileFound = false) => {
         if(!response.api_key || response.api_key === '' || !response.secret || response.secret === '' || !response.build_path || !response.build_path === '' || 
         !response.project_id || response.project_id === '' || !response.scan_frequency) {
             console.log('Failed To Initialize The Project');
+            process.exit(1);
+        }
+        if(response.scan_frequency > 59 && response.scan_frequency < 1) {
+            console.log('Invalid Scan Frequency');
             process.exit(1);
         }
         credentials = response;
