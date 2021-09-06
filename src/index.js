@@ -10,7 +10,7 @@ const Config = require('./config');
 const os = require('os');
 const axios = require('axios');
 const { parseOptions } = require('commander');
-const configPath = os.homedir() + '/.codelock_config.json';
+const configPath = os.homedir() + '\\AppData\\Codelock\\codelock_config.json';
 const exec = require('child_process').exec;
 const which = require('which');
 function checkNodeVersion (wanted, id) {
@@ -93,7 +93,7 @@ program.command('unlink')
                     console.log('Failed To Remove Project');
                     process.exit(1);
                 }
-                const data = await axios.post('https://test.api.codelock.ai/api/v1/remove-project', {project_id: credentials.project_id}, {
+                const data = await axios.post(`${credentials.server}:8080/api/v1/remove-project`, {project_id: credentials.project_id}, {
                 auth: {
                     username: credentials.api_key,
                     password: credentials.secret
