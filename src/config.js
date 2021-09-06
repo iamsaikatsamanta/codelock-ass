@@ -29,7 +29,7 @@ exports.prompt = (codelock_config, fileFound = false) => {
             type: 'string',
             message: 'Please Enter Your Server Url(http://api.codelock.com/http://192.168.0.1)',
             mask: true,
-            default: null
+            default: codelock_config ? codelock_config.server : null
         },
         {
             name: 'build_path',
@@ -85,32 +85,34 @@ const initProject =(response) => {
         }
     })
     .then(async resp => {
-        const nodePath = await which('node');
-        const scriptPath = os.homedir() + `\\AppData\\Codelock\\codelock_${credentials.project_id}.js`;
-        fs.writeFileSync(scriptPath,`const exec = require('child_process').exec;\nexec('codelock scan', (stdin, stderr)=>{console.log(stderr);});`)
-        exec(`schtasks.exe /create /tn codelock-scan  /sc minute /mo ${credentials.scan_frequency} /tr ${nodePath} ${scriptPath}`, async (stdin, stderr)=>{
+        exec(`schtasks.exe /create /tn codelock-scan /sc minute /mo ${credentials.scan_frequency} /tr \"cmd /c codelock scan\"`, async (stdin, stderr)=>{
                 if(stderr) {
                     console.log('Failed To Schedule Scan');
                     process.exit(1);
+                } else{
+                    return sendScanedHash(resp, true);
+
                 }
-                return sendScanedHash(resp, true);
         })
+
     })
     .then(resp => {
         console.log('Congratulations Project Setup Successful');
+        setInterval(()=> {
+            process.exit(1);
+        }, 3000);
     })
     .catch(err => {
-        console.log(err);
         console.log('Something went wrong please try again');
+        // process.exit(1);
     });
 }
 
 
 const configureProject = (codelock_config) => {
-    console.log(codelock_config);
     return new Promise(async (resolve, reject) =>{
         try {
-            const data = await axios.post(`${codelock_config.server}:8080/api/v1/configure-project`, 
+            const data = await axios.post(`${codelock_config.server}/api/v1/configure-project`, 
             {project_id: codelock_config.project_id, build_path: codelock_config.build_path, scan_frequency: codelock_config.scan_frequency} ,{
                 auth: {
                     username: codelock_config.api_key,
@@ -119,6 +121,7 @@ const configureProject = (codelock_config) => {
             });
             resolve(data.data);
         }catch(err) {
+            console.log(err);
             reject(err);
         }
     })
@@ -141,7 +144,7 @@ const sendScanedHash = (hash, init=false) => {
             const codelock_config = fs.readFileSync(configPath, 'utf8');
             if (codelock_config) {
                 const credentials = JSON.parse(codelock_config);
-                const data = await axios.post(`${credentials.server}:8080/api/v1/add-project-scan`, {
+                const data = await axios.post(`${credentials.server}/api/v1/add-project-scan`, {
                     project_id: credentials.project_id,
                     init,
                     hash,

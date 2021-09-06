@@ -86,21 +86,18 @@ program.command('unlink')
         if(existingConfig){
             const existingConfig = fs.readFileSync(configPath, 'utf8');
             const credentials = JSON.parse(existingConfig);
-            const scriptPath = os.homedir() + `/.codelock_${credentials.project_id}.js`;
-            const nodePath = await which('node');
-            exec(`(crontab -l | grep -v "${nodePath} ${scriptPath}") | crontab -`, async (stdin, stderr)=>{
+            exec(`schtasks /delete /tn codelock-scan`, async (stdin, stderr)=>{
                 if(stderr) {
                     console.log('Failed To Remove Project');
                     process.exit(1);
                 }
-                const data = await axios.post(`${credentials.server}:8080/api/v1/remove-project`, {project_id: credentials.project_id}, {
+                const data = await axios.post(`${credentials.server}/api/v1/remove-project`, {project_id: credentials.project_id}, {
                 auth: {
                     username: credentials.api_key,
                     password: credentials.secret
                 }
                 });
                 if(data.data.code === 0 ) {
-                    fs.unlinkSync(scriptPath);
                     fs.unlinkSync(configPath);
                     console.log('Project Removed Succssfully');
                     process.exit(1);
